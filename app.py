@@ -118,7 +118,7 @@ ie = Core()
 # template = ["building", "company", "persons", "city",
 #             "state", "height", "floor", "address"]
 
-download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-recognition-0001 --precision FP16'
+download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
 #download_command_jap = 'omz_downloader --name handwritten-japanese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
 
 res = subprocess.run(download_command_ch, capture_output=True)
@@ -139,9 +139,9 @@ japanese_files = Language(
 )
 
 # load chinese language files
-path_to_model_weights = f'intel/{chinese_files.model_name}/FP16/{chinese_files.model_name}.bin'
+path_to_model_weights = f'model/handwritten_ocr/intel/{chinese_files.model_name}/FP16/{chinese_files.model_name}.bin'
 
-path_to_model = f'intel/{chinese_files.model_name}/FP16/{chinese_files.model_name}.xml'
+path_to_model = f'model/handwritten_ocr/intel/{chinese_files.model_name}/FP16/{chinese_files.model_name}.xml'
 model_ch_ocr = ie.read_model(model=path_to_model)
 
 compiled_model_ch_ocr = ie.compile_model(model=model_ch_ocr, device_name="CPU")
