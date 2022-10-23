@@ -125,8 +125,8 @@ download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-reco
 #print(res.stdout)
 # res = subprocess.run(download_command_jap, capture_output=True)
 # print(res.stdout)
-import os
-os.system(download_command_ch)
+# import os
+# os.system(download_command_ch)
 
 Language = namedtuple(
     typename="Language", field_names=["model_name", "charlist_name"]
