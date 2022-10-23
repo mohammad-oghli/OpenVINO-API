@@ -1,5 +1,5 @@
 numpy
 matplotlib
-openvino
+openvino-dev
 opencv-python
 tokenizers
