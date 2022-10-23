@@ -121,10 +121,12 @@ ie = Core()
 download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
 #download_command_jap = 'omz_downloader --name handwritten-japanese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
 
-res = subprocess.call(download_command_ch)
+#res = subprocess.call(download_command_ch)
 #print(res.stdout)
 # res = subprocess.run(download_command_jap, capture_output=True)
 # print(res.stdout)
+import os
+os.system(download_command_ch)
 
 Language = namedtuple(
     typename="Language", field_names=["model_name", "charlist_name"]
