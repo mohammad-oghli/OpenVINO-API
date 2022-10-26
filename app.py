@@ -20,7 +20,6 @@ from qa_utils import load_context, get_best_answer
 # Models Configurations
 ie = Core()
 
-imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
 model_ac = ie.read_model(model="model/animal_classify/v3-small_224_1.0_float.xml")
 compiled_model_ac = ie.compile_model(model=model_ac, device_name="CPU")
 
@@ -171,7 +170,7 @@ recognition_input_layer_jap = compiled_model_jap_ocr.input(0)
 
 
 def cv_animal_classify(image_source):
-    global imagenet_classes
+    imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
     raw_image = load_image(image_source)
     # The MobileNet model expects images in RGB format.
     image = to_rgb(raw_image)
@@ -478,7 +477,7 @@ def question_answering(sources, example_question):
 
 
 if __name__ == "__main__":
-    img = "data/animal_classify/test.jpg"
+    img = "data/animal_classify/animal2.jpg"
     result = cv_animal_classify(img)
     print(result)
     img = "data/road_segmentation/empty_road_mapillary.jpg"
