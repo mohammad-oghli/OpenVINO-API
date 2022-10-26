@@ -305,7 +305,8 @@ def cv_ocd(image_source):
 #     return ocr_result, annotations
 
 def cv_superresolution(image_source):
-    return image_super_resolution.cv_superresolution(image_source).value
+    superresolution = image_super_resolution.cv_superresolution(image_source).value
+    return superresolution
 
 def cv_vehicle_rec(image_source):
     vehicle_rec = vehicle_recognition.cv_vehicle_detect(image_source).value
