@@ -1,5 +1,6 @@
 numpy
 matplotlib
-openvino-dev
+openvino
 opencv-python
+pydaisi
 tokenizers

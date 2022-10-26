@@ -3,39 +3,41 @@ import itertools
 import subprocess
 from itertools import groupby
 import cv2
+import pydaisi as pyd
 import matplotlib.pyplot as plt
 import numpy as np
 from openvino.runtime import Core, Dimension
 from tokenizers import SentencePieceBPETokenizer
-#from transformers import GPT2Tokenizer
+# from transformers import GPT2Tokenizer
 import utils.tokens_bert as tokens
-from cv_utils import load_image, to_rgb, to_gray, convert_result_to_image, multiply_by_ratio, run_preprocesing_on_crop
+from cv_utils import load_image, to_rgb, to_gray, convert_result_to_image_ocd, \
+    convert_result_to_image, multiply_by_ratio, run_preprocesing_on_crop
 from ner_utils import get_best_entity
-#from qa_utils import load_context, get_best_answer
-from gpt2_utils import load_vocab_file, tokenize, generate_sequence
+from qa_utils import load_context, get_best_answer
+#from gpt2_utils import load_vocab_file, tokenize, generate_sequence
 
 # OpenVino Global Variables
 # Models Configurations
 ie = Core()
-# imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
-# model_ac = ie.read_model(model="model/animal_classify/v3-small_224_1.0_float.xml")
-# compiled_model_ac = ie.compile_model(model=model_ac, device_name="CPU")
-#
-# output_layer_ac = compiled_model_ac.output(0)
-#
-# model_rs = ie.read_model(model="model/road_segmentation/road-segmentation-adas-0001.xml")
-# compiled_model_rs = ie.compile_model(model=model_rs, device_name="CPU")
-#
-# input_layer_rs = compiled_model_rs.input(0)
-# output_layer_rs = compiled_model_rs.output(0)
+
+imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
+model_ac = ie.read_model(model="model/animal_classify/v3-small_224_1.0_float.xml")
+compiled_model_ac = ie.compile_model(model=model_ac, device_name="CPU")
+
+output_layer_ac = compiled_model_ac.output(0)
+
+model_rs = ie.read_model(model="model/road_segmentation/road-segmentation-adas-0001.xml")
+compiled_model_rs = ie.compile_model(model=model_rs, device_name="CPU")
+
+input_layer_rs = compiled_model_rs.input(0)
+output_layer_rs = compiled_model_rs.output(0)
 
 
+model_ocr = ie.read_model(model="model/ocr/horizontal-text-detection-0001.xml")
+compiled_model_ocr = ie.compile_model(model=model_ocr, device_name="CPU")
 
-# model_ocr = ie.read_model(model="model/ocr/horizontal-text-detection-0001.xml")
-# compiled_model_ocr = ie.compile_model(model=model_ocr, device_name="CPU")
-#
-# input_layer_ocr = compiled_model_ocr.input(0)
-# output_layer_ocr = compiled_model_ocr.output("boxes")
+input_layer_ocr = compiled_model_ocr.input(0)
+output_layer_ocr = compiled_model_ocr.output("boxes")
 
 # recognition_model = ie.read_model(model="model/ocr/text-recognition-resnet-fc.xml",
 #                                   weights="model/ocr/text-recognition-resnet-fc.bin")
@@ -44,26 +46,30 @@ ie = Core()
 #
 # recognition_output_layer = recognition_compiled_model.output(0)
 # recognition_input_layer = recognition_compiled_model.input(0)
-#
-# model_name = "bert-small-uncased-whole-word-masking-squad-int8-0002"
-# model_path = f"model/named_er/intel/{model_name}/FP16-INT8/{model_name}.xml"
-# model_weights_path = f"model/named_er/intel/{model_name}/FP16-INT8/{model_name}.bin"
-#
-# model_ner = ie.read_model(model=model_path, weights=model_weights_path)
-# # Assign dynamic shapes to every input layer on the last dimension.
-# for input_layer in model_ner.inputs:
-#     input_shape = input_layer.partial_shape
-#     input_shape[1] = Dimension(1, 384)
-#     model_ner.reshape({input_layer: input_shape})
-#
-# compiled_model_ner = ie.compile_model(model=model_ner, device_name="CPU")
-#
-# # Get input names of nodes.
-# input_keys = list(compiled_model_ner.inputs)
-#
-# # Set a confidence score threshold.
-# confidence_threshold = 0.4
-#
+
+image_super_resolution = pyd.Daisi("oghli/Image Super Resolution")
+
+vehicle_recognition = pyd.Daisi("oghli/Vehicle Recognition")
+
+model_name = "bert-small-uncased-whole-word-masking-squad-int8-0002"
+model_path = f"model/named_er/intel/{model_name}/FP16-INT8/{model_name}.xml"
+model_weights_path = f"model/named_er/intel/{model_name}/FP16-INT8/{model_name}.bin"
+
+model_ner = ie.read_model(model=model_path, weights=model_weights_path)
+# Assign dynamic shapes to every input layer on the last dimension.
+for input_layer in model_ner.inputs:
+    input_shape = input_layer.partial_shape
+    input_shape[1] = Dimension(1, 384)
+    model_ner.reshape({input_layer: input_shape})
+
+compiled_model_ner = ie.compile_model(model=model_ner, device_name="CPU")
+
+# Get input names of nodes.
+input_keys = list(compiled_model_ner.inputs)
+
+# Set a confidence score threshold.
+confidence_threshold = 0.4
+
 # model_name = "machine-translation-nar-en-de-0002"
 # model_path = f"model/translate_eg/intel/{model_name}/FP32/{model_name}.xml"
 # model = ie.read_model(model=model_path)
@@ -109,26 +115,19 @@ ie = Core()
 # eos_token_id = len(vocab_gpt2) - 1
 # tokenizer._convert_id_to_token(len(vocab_gpt2) - 1)
 
-# # A path to a vocabulary file.
-# vocab_file_path = "utils/vocab.txt"
-#
-# # Create a dictionary with words and their indices.
-# vocab = tokens.load_vocab_file(vocab_file_path)
-#
-# template = ["building", "company", "persons", "city",
-#             "state", "height", "floor", "address"]
+# A path to a vocabulary file.
+vocab_file_path = "utils/vocab.txt"
 
-download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
-#download_command_jap = 'omz_downloader --name handwritten-japanese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
+# Create a dictionary with words and their indices.
+vocab = tokens.load_vocab_file(vocab_file_path)
 
-#res = subprocess.call(download_command_ch)
-#print(res.stdout)
-# res = subprocess.run(download_command_jap, capture_output=True)
-# print(res.stdout)
-import os
-OUTPUT_PATH = "model/handwritten_ocr"
-os.makedirs(OUTPUT_PATH, exist_ok=True)
-os.system(download_command_ch)
+template = ["building", "company", "persons", "city",
+            "state", "height", "floor", "address"]
+
+# download_command_ch = 'omz_downloader --name handwritten-simplified-chinese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
+# download_command_jap = 'omz_downloader --name handwritten-japanese-recognition-0001 --output_dir model/handwritten_ocr --precision FP16'
+
+# res = subprocess.call(download_command_ch)
 
 Language = namedtuple(
     typename="Language", field_names=["model_name", "charlist_name"]
@@ -142,6 +141,12 @@ japanese_files = Language(
     charlist_name="japanese_charlist.txt",
 )
 
+#handwritten_ocr_model = pyd.Daisi("oghli/HandWritten OCR Model")
+
+# charlist_name_ch = "chinese_charlist.txt"
+# charlist_name_jap = "japanese_charlist.txt"
+
+
 # load chinese language files
 path_to_model_weights = f'model/handwritten_ocr/intel/{chinese_files.model_name}/FP16/{chinese_files.model_name}.bin'
 
@@ -154,66 +159,85 @@ recognition_output_layer_ch = compiled_model_ch_ocr.output(0)
 recognition_input_layer_ch = compiled_model_ch_ocr.input(0)
 
 # load japanese language files
-# path_to_model_weights = f'model/handwritten_ocr/intel/{japanese_files.model_name}/FP16/{japanese_files.model_name}.bin'
-#
-# path_to_model = f'model/handwritten_ocr/intel/{japanese_files.model_name}/FP16/{japanese_files.model_name}.xml'
-# model_jap_ocr = ie.read_model(model=path_to_model)
-#
-# compiled_model_jap_ocr = ie.compile_model(model=model_ch_ocr, device_name="CPU")
-#
-# recognition_output_layer_jap = compiled_model_jap_ocr.output(0)
-# recognition_input_layer_jap = compiled_model_jap_ocr.input(0)
+path_to_model_weights = f'model/handwritten_ocr/intel/{japanese_files.model_name}/FP16/{japanese_files.model_name}.bin'
+
+path_to_model = f'model/handwritten_ocr/intel/{japanese_files.model_name}/FP16/{japanese_files.model_name}.xml'
+model_jap_ocr = ie.read_model(model=path_to_model)
+
+compiled_model_jap_ocr = ie.compile_model(model=model_ch_ocr, device_name="CPU")
+
+recognition_output_layer_jap = compiled_model_jap_ocr.output(0)
+recognition_input_layer_jap = compiled_model_jap_ocr.input(0)
 
 
-# def cv_animal_classify(image_source):
-#     global imagenet_classes
-#     raw_image = load_image(image_source)
-#     # The MobileNet model expects images in RGB format.
-#     image = to_rgb(raw_image)
-#
-#     # Resize to MobileNet image shape.
-#     input_image = cv2.resize(src=image, dsize=(224, 224))
-#
-#     # Reshape to model input shape.
-#     input_image = np.expand_dims(input_image, 0)
-#     result_infer = compiled_model_ac([input_image])[output_layer_ac]
-#     result_index = np.argmax(result_infer)
-#     # Convert the inference result to a class name.
-#     # The model description states that for this model, class 0 is a background.
-#     # Therefore, a background must be added at the beginning of imagenet_classes.
-#     imagenet_classes = ['background'] + imagenet_classes
-#
-#     class_result = imagenet_classes[result_index].split()[1:]
-#     class_result = " ".join(class_result)
-#     return class_result
-#
-#
-# def cv_road_segmentation(image_source):
-#     # The segmentation network expects images in BGR format.
-#     image = load_image(image_source)
-#
-#     rgb_image = to_rgb(image)
-#     image_h, image_w, _ = image.shape
-#
-#     # N,C,H,W = batch size, number of channels, height, width.
-#     N, C, H, W = input_layer_rs.shape
-#
-#     # OpenCV resize expects the destination size as (width, height).
-#     resized_image = cv2.resize(image, (W, H))
-#
-#     # Reshape to the network input shape.
-#     input_image = np.expand_dims(
-#         resized_image.transpose(2, 0, 1), 0
-#     )
-#     # Run the inference.
-#     result = compiled_model_rs([input_image])[output_layer_rs]
-#
-#     # Prepare data for visualization.
-#     segmentation_mask = np.argmax(result, axis=1)
-#     segmentation_result = segmentation_mask.transpose(1, 2, 0)
-#     return segmentation_result
-#
-#
+def cv_animal_classify(image_source):
+    global imagenet_classes
+    raw_image = load_image(image_source)
+    # The MobileNet model expects images in RGB format.
+    image = to_rgb(raw_image)
+
+    # Resize to MobileNet image shape.
+    input_image = cv2.resize(src=image, dsize=(224, 224))
+
+    # Reshape to model input shape.
+    input_image = np.expand_dims(input_image, 0)
+    result_infer = compiled_model_ac([input_image])[output_layer_ac]
+    result_index = np.argmax(result_infer)
+    # Convert the inference result to a class name.
+    # The model description states that for this model, class 0 is a background.
+    # Therefore, a background must be added at the beginning of imagenet_classes.
+    imagenet_classes = ['background'] + imagenet_classes
+
+    class_result = imagenet_classes[result_index].split()[1:]
+    class_result = " ".join(class_result)
+    return class_result
+
+def cv_road_segmentation(image_source):
+    # The segmentation network expects images in BGR format.
+    image = load_image(image_source)
+
+    rgb_image = to_rgb(image)
+    image_h, image_w, _ = image.shape
+
+    # N,C,H,W = batch size, number of channels, height, width.
+    N, C, H, W = input_layer_rs.shape
+
+    # OpenCV resize expects the destination size as (width, height).
+    resized_image = cv2.resize(image, (W, H))
+
+    # Reshape to the network input shape.
+    input_image = np.expand_dims(
+        resized_image.transpose(2, 0, 1), 0
+    )
+    # Run the inference.
+    result = compiled_model_rs([input_image])[output_layer_rs]
+
+    # Prepare data for visualization.
+    segmentation_mask = np.argmax(result, axis=1)
+    segmentation_result = segmentation_mask.transpose(1, 2, 0)
+    return segmentation_result
+
+def cv_ocd(image_source):
+    # Text detection models expect an image in BGR format.
+    image = load_image(image_source)
+    # N,C,H,W = batch size, number of channels, height, width.
+    N, C, H, W = input_layer_ocr.shape
+
+    # Resize the image to meet network expected input sizes.
+    resized_image = cv2.resize(image, (W, H))
+
+    # Reshape to the network input shape.
+    input_image = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
+
+    # Create an inference request.
+    boxes = compiled_model_ocr([input_image])[output_layer_ocr]
+
+    # Remove zero only boxes.
+    boxes = boxes[~np.all(boxes == 0, axis=1)]
+
+    ocd_result = convert_result_to_image_ocd(image, resized_image, boxes, conf_labels=False)
+    return ocd_result
+
 # def cv_ocr(image_source):
 #     # Text detection models expect an image in BGR format.
 #     image = load_image(image_source)
@@ -279,32 +303,37 @@ recognition_input_layer_ch = compiled_model_ch_ocr.input(0)
 #     # The image passed here is in BGR format with changed width and height. To display it in colors expected by matplotlib, use cvtColor function
 #     ocr_result = convert_result_to_image(image, resized_image, boxes_with_annotations, conf_labels=True)
 #     return ocr_result, annotations
-#
-#
-# def analyze_entities(context):
-#     print(f"Context: {context}\n", flush=True)
-#
-#     if len(context) == 0:
-#         print("Error: Empty context or outside paragraphs")
-#         return
-#
-#     if len(context) > 380:
-#         print("Error: The context is too long for this particular model. "
-#               "Try with context shorter than 380 words.")
-#         return
-#
-#     extract = []
-#     for field in template:
-#         entity_to_find = field + "?"
-#         entity, score = get_best_entity(entity=entity_to_find,
-#                                         context=context,
-#                                         vocab=vocab,
-#                                         compiled_model=compiled_model_ner)
-#         if score >= confidence_threshold:
-#             extract.append({"Entity": entity, "Type": field,
-#                             "Score": f"{score:.2f}"})
-#     res = {"Extraction": extract}
-#     return res
+
+def cv_superresolution(image_source):
+    return image_super_resolution.cv_superresolution(image_source).value
+
+def cv_vehicle_rec(image_source):
+    return vehicle_recognition.cv_vehicle_detect(image_source).value
+
+def analyze_entities(context):
+    print(f"Context: {context}\n", flush=True)
+
+    if len(context) == 0:
+        print("Error: Empty context or outside paragraphs")
+        return
+
+    if len(context) > 380:
+        print("Error: The context is too long for this particular model. "
+              "Try with context shorter than 380 words.")
+        return
+
+    extract = []
+    for field in template:
+        entity_to_find = field + "?"
+        entity, score = get_best_entity(entity=entity_to_find,
+                                        context=context,
+                                        vocab=vocab,
+                                        compiled_model=compiled_model_ner)
+        if score >= confidence_threshold:
+            extract.append({"Entity": entity, "Type": field,
+                            "Score": f"{score:.2f}"})
+    res = {"Extraction": extract}
+    return res
 
 
 def handwritten_ocr(image_source, lang):
@@ -312,11 +341,15 @@ def handwritten_ocr(image_source, lang):
         compiled_model = compiled_model_ch_ocr
         recognition_input_layer = recognition_input_layer_ch
         recognition_output_layer = recognition_output_layer_ch
+        # input_shape = handwritten_ocr_model.input_shape_ch
+        # hand_ocr_inference = handwritten_ocr_model.hand_ocr_inference_ch
         charlist = chinese_files.charlist_name
     elif lang.lower() == "jap":
         compiled_model = compiled_model_jap_ocr
         recognition_input_layer = recognition_input_layer_jap
         recognition_output_layer = recognition_output_layer_jap
+        # input_shape = handwritten_ocr_model.input_shape_jap
+        # hand_ocr_inference = handwritten_ocr_model.hand_ocr_inference_jap
         charlist = japanese_files.charlist_name
     else:
         return "Invalid language selected!"
@@ -328,6 +361,7 @@ def handwritten_ocr(image_source, lang):
 
     # B,C,H,W = batch size, number of channels, height, width.
     _, _, H, W = recognition_input_layer.shape
+    # H, W = input_shape().value
 
     # Calculate scale ratio between the input shape height and image height to resize the image.
     scale_ratio = H / image_height
@@ -351,6 +385,8 @@ def handwritten_ocr(image_source, lang):
         letters = blank_char + "".join(line.strip() for line in charlist)
     # Run inference on the model
     predictions = compiled_model([input_image])[recognition_output_layer]
+    # predictions = hand_ocr_inference(input_image).value
+
     # Remove a batch dimension.
     predictions = np.squeeze(predictions)
 
@@ -371,20 +407,20 @@ def handwritten_ocr(image_source, lang):
     return result_text
 
 
-# def question_answering(sources, example_question):
-#     context = load_context(sources)
-#     if len(context) == 0:
-#         print("Error: Empty context or outside paragraphs")
-#         return
-#
-#     answer, score = get_best_answer(question=example_question, context=context)
-#
-#     result_qa = {
-#         "Question": example_question,
-#         "Answer": answer,
-#         "Score": f"{score:.2f}"
-#     }
-#     return result_qa
+def question_answering(sources, example_question):
+    context = load_context(sources)
+    if len(context) == 0:
+        print("Error: Empty context or outside paragraphs")
+        return
+
+    answer, score = get_best_answer(question=example_question, context=context)
+
+    result_qa = {
+        "Question": example_question,
+        "Answer": answer,
+        "Score": f"{score:.2f}"
+    }
+    return result_qa
 
 
 # def translate_eg(sentence: str) -> str:
@@ -440,33 +476,42 @@ def handwritten_ocr(image_source, lang):
 
 
 if __name__ == "__main__":
-    # img = "data/animal_classify/test.jpg"
-    # result = cv_animal_classify(img)
-    # print(result)
-    # img = "data/road_segmentation/empty_road_mapillary.jpg"
-    # result = cv_road_segmentation(img)
-    # plt.imshow(result)
-    # plt.show()
-    # img = "data/ocr/intel_rnb.jpg"
-    # result, annotations = cv_ocr(img)
-    # plt.imshow(result)
-    # plt.show()
-    # print(annotations)
-    # source_text = "Intel was founded in Mountain View, California, " \
-    #               "in 1968 by Gordon E. Moore, a chemist, and Robert Noyce, " \
-    #               "a physicist and co-inventor of the integrated circuit."
-    # result = analyze_entities(source_text)
-    # print(result)
+    img = "data/animal_classify/test.jpg"
+    result = cv_animal_classify(img)
+    print(result)
+    img = "data/road_segmentation/empty_road_mapillary.jpg"
+    result = cv_road_segmentation(img)
+    plt.imshow(result)
+    plt.show()
+    img = "data/ocr/intel_rnb.jpg"
+    result = cv_ocd(img)
+    plt.imshow(result)
+    plt.show()
+    #print(annotations)
+    source_text = "Intel was founded in Mountain View, California, " \
+                  "in 1968 by Gordon E. Moore, a chemist, and Robert Noyce, " \
+                  "a physicist and co-inventor of the integrated circuit."
+    result = analyze_entities(source_text)
+    print(result)
     img = "data/handwritten_ocr/handwritten_chinese_test.jpg"
     result = handwritten_ocr(img, "CH")
     print(result)
-    # sources = ["https://en.wikipedia.org/wiki/OpenVINO"]
-    # question = "What does OpenVINO refers to?"
-    # result = question_answering(sources, question)
-    # print(result)
+    sources = ["https://en.wikipedia.org/wiki/OpenVINO"]
+    question = "What does OpenVINO refers to?"
+    result = question_answering(sources, question)
+    print(result)
     # sentence = "My name is openvino"
     # result = translate_eg(sentence)
     # print(result)
     # text = "VR Games is a type of virtual reality technology"
     # result = gpt_2(text)
     # print(result)
+    img = "https://i.imgur.com/R5ovXDO.jpg"
+    result = cv_superresolution(img)
+    plt.imshow(result[1])
+    plt.show()
+    img = "https://i.imgur.com/IvwQdz5.jpg"
+    result = cv_vehicle_rec(img)
+    plt.imshow(result)
+    plt.show()
+
