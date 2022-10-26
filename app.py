@@ -308,7 +308,8 @@ def cv_superresolution(image_source):
     return image_super_resolution.cv_superresolution(image_source).value
 
 def cv_vehicle_rec(image_source):
-    return vehicle_recognition.cv_vehicle_detect(image_source).value
+    vehicle_rec = vehicle_recognition.cv_vehicle_detect(image_source).value
+    return vehicle_rec
 
 def analyze_entities(context):
     print(f"Context: {context}\n", flush=True)
