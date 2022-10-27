@@ -8,6 +8,7 @@ At this time It contains 8 different deployed models which available on [Open Mo
 
 This implementation in its initial phase and still need alot of work.
 
+Check this [demo](https://youtu.be/-VdZlzWaJvA) for more info about the project.
 ____________________________________
 
 Please support me by forking and starring the repository.
