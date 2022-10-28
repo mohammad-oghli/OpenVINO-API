@@ -75,7 +75,117 @@ Currently, Deployed OpenVINO Models:
   } </pre>
 
 
+### How to call it
 
+-First load **OpenVINO API** Daisi
+
+<pre>
+import pydaisi as pyd
+openvino_api_v3 = pyd.Daisi("oghli/OpenVINO API v3")
+</pre>
+
+* **Animal Classification Model**
+
+  Call the `cv_animal_classify` end point, passing the `image_source` to classify it, you can pass image source either from `data/animal_classify/` directory or from valid `url` of the image
+  <pre>
+  img = "data/animal_classify/test.jpg"
+  result = openvino_api_v3.cv_animal_classify(img).value
+  result
+  </pre>
+
+* **Road Segmentation Model**
+    
+  Call the `cv_road_segmentation` end point, passing the `image_source` to segment roads in it, you can pass image source either from `data/road_segmentation/` directory or from valid `url` of the image
+  <pre>
+  img = "data/road_segmentation/empty_road_mapillary.jpg"
+  result = openvino_api_v3.cv_road_segmentation(img).value
+  </pre>
+  To show the result image import `matplotlib` then use `plt.imshow` method
+  <pre>
+  import matplotlib.pyplot as plt
+  plt.figure(figsize=(15, 5))
+  plt.imshow(result)
+  </pre>
+
+* **Optical Character Detection Model**
+
+  Call the `cv_ocd` end point, passing the `image_source` to detect text in it, you can pass image source either from `data/ocr/` directory or from valid `url` of the image
+  <pre>
+  img = "data/ocr/intel_rnb.jpg"
+  result = openvino_api_v3.cv_ocd(img).value
+  plt.figure(figsize=(20, 10))
+  plt.imshow(result)
+  </pre>
+
+* **Super Resolution Model**  
+  Call the `cv_superresolution` end point, passing the `image_source` to enhance it, you can pass image source either from a directory path or from valid `url` of the image
+  <pre>
+  img = "https://i.imgur.com/R5ovXDO.jpg"
+  result = openvino_api_v3.cv_superresolution(img).value
+  plt.figure(figsize=(20, 10))
+  plt.imshow(result[1])
+  </pre>
+
+* **Vehicle Recognition Model**
+  
+  Call the `cv_vehicle_rec` end point, passing the `image_source` to recognize Vehicles in it, you can pass image source either from a directory path or from valid `url` of the image
+  
+  <pre>
+  img = "https://i.imgur.com/IvwQdz5.jpg"
+  result = openvino_api_v3.cv_vehicle_rec(img).value
+  plt.figure(figsize=(20, 10))
+  plt.imshow(result)
+  </pre>
+
+* **Named Entity Recognition**
+    
+  Call the `analyze_entities` end point, passing the `source_text` to analyze entities in it
+  <pre>
+  source_text = "Intel was founded in Mountain View, California, " \
+                    "in 1968 by Gordon E. Moore, a chemist, and Robert Noyce, " \
+                    "a physicist and co-inventor of the integrated circuit."
+  result = openvino_api_v3.analyze_entities(source_text).value
+  result 
+  </pre>
+
+* **Handwritten OCR**
+    
+  Call the `handwritten_ocr` end point, passing the `image_source` and the selected language `lang` to recognize text in it, you can pass image source either from `data/handwritten_ocr/` directory or from valid `url` of the image
+  <pre>
+  img = "data/handwritten_ocr/handwritten_chinese_test.jpg"
+  result = openvino_api_v3.handwritten_ocr(img, "ch").value
+  result
+  </pre>
+  
+  Set lang using `"ch"` for chinesse language or `"jap"` for japanese language
+   
+  <pre>img = "data/handwritten_ocr/handwritten_japanese_test.png"
+  result = openvino_api_v3.handwritten_ocr(img, "jap").value
+  result 
+  </pre>
+
+* **Interactive Question Answering**
+
+    Call the `question_answering` end point, passing the `sources` as array and the `question` to answer it using the provided sources, you can pass sources either as string `text` or from valid `url` for the information resource
+  
+  <pre>
+  sources = ["https://en.wikipedia.org/wiki/OpenVINO"]
+  question = "What does OpenVINO refers to?"
+  result = openvino_api_v3.question_answering(sources, question).value
+  result
+  </pre>
+  
+  <pre>
+  sources = ["Computational complexity theory is a branch of the theory of computation in theoretical computer "
+             "science that focuses on classifying computational problems according to their inherent difficulty, "
+             "and relating those classes to each other. A computational problem is understood to be a task that "
+             "is in principle amenable to being solved by a computer, which is equivalent to stating that the "
+             "problem may be solved by mechanical application of mathematical steps, such as an algorithm."]
+  
+  question = "what branch of the theory of computation in theoretical computer science that focuses on classifying computational problems?"
+  result = openvino_api_v3.question_answering(sources, example_question=question).value
+  result
+  </pre> 
 ____________________________________
 
 Please support me by starring the repository.
