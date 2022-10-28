@@ -78,6 +78,6 @@ Currently, Deployed OpenVINO Models:
 
 ____________________________________
 
-Please support me starring the repository.
+Please support me by starring the repository.
 
 Contributor: _**Mohamad Oghli**_.
