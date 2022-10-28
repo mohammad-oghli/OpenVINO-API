@@ -21,7 +21,7 @@ Currently, Deployed OpenVINO Models:
 
 * Road Segmentation
   
-  ![road_segmentation](https://i.imgur.com/ixDf4ic.png)
+  ![road_segmentation](https://i.imgur.com/uvTwSB1.png)
 
 * Optical Character Detection(OCD)
   
