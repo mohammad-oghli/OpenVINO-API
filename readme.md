@@ -117,7 +117,8 @@ openvino_api_v3 = pyd.Daisi("oghli/OpenVINO API v3")
   plt.imshow(result)
   </pre>
 
-* **Super Resolution Model**  
+* **Super Resolution Model** 
+
   Call the `cv_superresolution` end point, passing the `image_source` to enhance it, you can pass image source either from a directory path or from valid `url` of the image
   <pre>
   img = "https://i.imgur.com/R5ovXDO.jpg"
