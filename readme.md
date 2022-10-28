@@ -10,7 +10,7 @@ This implementation in its initial phase and still need alot of work.
 
 Check this [demo](https://youtu.be/-VdZlzWaJvA) for more info about the project.
 ____________________________________
-### Models
+## Models
 Currently, Deployed OpenVINO Models:
 * Animal Classification
 
@@ -75,7 +75,7 @@ Currently, Deployed OpenVINO Models:
   } </pre>
 
 
-### How to call it
+## How to call it
 
 -First load **OpenVINO API** Daisi
 
