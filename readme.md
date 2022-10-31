@@ -138,7 +138,7 @@ openvino_api_v3 = pyd.Daisi("oghli/OpenVINO API v3")
   plt.imshow(result)
   </pre>
 
-* **Named Entity Recognition**
+* **Named Entity Recognition Model**
     
   Call the `analyze_entities` end point, passing the `source_text` to analyze entities in it
   <pre>
@@ -149,7 +149,7 @@ openvino_api_v3 = pyd.Daisi("oghli/OpenVINO API v3")
   result 
   </pre>
 
-* **Handwritten OCR**
+* **Handwritten OCR Model**
     
   Call the `handwritten_ocr` end point, passing the `image_source` and the selected language `lang` to recognize text in it, you can pass image source either from `data/handwritten_ocr/` directory or from valid `url` of the image
   <pre>
@@ -165,7 +165,7 @@ openvino_api_v3 = pyd.Daisi("oghli/OpenVINO API v3")
   result 
   </pre>
 
-* **Interactive Question Answering**
+* **Interactive Question Answering Model**
 
     Call the `question_answering` end point, passing the `sources` as array and the `question` to answer it using the provided sources, you can pass sources either as string `text` or from valid `url` for the information resource
   

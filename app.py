@@ -477,7 +477,7 @@ def question_answering(sources, example_question):
 
 
 if __name__ == "__main__":
-    img = "data/animal_classify/animal2.jpg"
+    img = "data/animal_classify/test.jpg"
     result = cv_animal_classify(img)
     print(result)
     img = "data/road_segmentation/empty_road_mapillary.jpg"
