@@ -176,7 +176,7 @@ def cv_animal_classify(image_source):
     image_source(str): Valid image url or image object of the input image
 
     :return
-    class_result(str): name of the animal class
+    class_result(str): Name of the animal class
     '''
     imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
     raw_image = load_image(image_source)
@@ -347,7 +347,7 @@ def cv_vehicle_rec(image_source):
     image_source(str): Valid image url or image object of the input image
 
     :return
-    rgb_image(np.ndarray): processed image indicating detected vehicles info
+    rgb_image(np.ndarray): Processed image indicating detected vehicles info
     '''
     vehicle_rec = vehicle_recognition.cv_vehicle_detect(image_source).value
     return vehicle_rec
@@ -391,7 +391,7 @@ def handwritten_ocr(image_source, lang):
     Recognize Chinese or japanese text in image
     :param
     image_source(str): Valid image url or image object of the input image
-
+    :param
     lang(str): Selected language "ch" for chinese or "jap" for japanese
 
     :return
@@ -472,7 +472,7 @@ def question_answering(sources, example_question):
     Interactive question answering according to provided sources
     :param
     sources(arr): Array of valid source url or string text
-
+    :param
     example_question(str): Question for the model
 
     :return
