@@ -170,6 +170,14 @@ recognition_input_layer_jap = compiled_model_jap_ocr.input(0)
 
 
 def cv_animal_classify(image_source):
+    '''
+    Classify animal in image
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    :return
+    class_result(str): name of the animal class
+    '''
     imagenet_classes = open("utils/imagenet_2012.txt").read().splitlines()
     raw_image = load_image(image_source)
     # The MobileNet model expects images in RGB format.
@@ -192,6 +200,14 @@ def cv_animal_classify(image_source):
     return class_result
 
 def cv_road_segmentation(image_source):
+    '''
+    Detect and segment road in image
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    :return
+    segmentation_result(np.ndarray): Segmentation image of the input image
+    '''
     # The segmentation network expects images in BGR format.
     image = load_image(image_source)
 
@@ -217,6 +233,14 @@ def cv_road_segmentation(image_source):
     return segmentation_result
 
 def cv_ocd(image_source):
+    '''
+    Detect horizontal text object in image
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    :return
+    ocd_result(np.ndarray): OCD image with blob on detected text
+    '''
     # Text detection models expect an image in BGR format.
     image = load_image(image_source)
     # N,C,H,W = batch size, number of channels, height, width.
@@ -304,14 +328,39 @@ def cv_ocd(image_source):
 #     return ocr_result, annotations
 
 def cv_superresolution(image_source):
+    '''
+    Enhance low resolution image using deep learning (SISR) model
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    :return
+    bicubic_image(np.ndarray): Reshaped input image to the model target resolution
+    - superresolution_image(np.ndarray): Super resolution image of the input image
+    '''
     superresolution = image_super_resolution.cv_superresolution(image_source).value
     return superresolution
 
 def cv_vehicle_rec(image_source):
+    '''
+    Detect and classify vehicles in raw image
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    :return
+    rgb_image(np.ndarray): processed image indicating detected vehicles info
+    '''
     vehicle_rec = vehicle_recognition.cv_vehicle_detect(image_source).value
     return vehicle_rec
 
 def analyze_entities(context):
+    '''
+    Analyze and extract entities from text
+    :param
+    context(str): Input text
+
+    :return
+    result(dict): Dictionary containing the extracted entities
+    '''
     print(f"Context: {context}\n", flush=True)
 
     if len(context) == 0:
@@ -333,11 +382,21 @@ def analyze_entities(context):
         if score >= confidence_threshold:
             extract.append({"Entity": entity, "Type": field,
                             "Score": f"{score:.2f}"})
-    res = {"Extraction": extract}
-    return res
+    result = {"Extraction": extract}
+    return result
 
 
 def handwritten_ocr(image_source, lang):
+    '''
+    Recognize Chinese or japanese text in image
+    :param
+    image_source(str): Valid image url or image object of the input image
+
+    lang(str): Selected language "ch" for chinese or "jap" for japanese
+
+    :return
+    result_text(str): Recognized text in the image
+    '''
     if lang.lower() == "ch":
         compiled_model = compiled_model_ch_ocr
         recognition_input_layer = recognition_input_layer_ch
@@ -409,6 +468,16 @@ def handwritten_ocr(image_source, lang):
 
 
 def question_answering(sources, example_question):
+    '''
+    Interactive question answering according to provided sources
+    :param
+    sources(arr): Array of valid source url or string text
+
+    example_question(str): Question for the model
+
+    :return
+    result_qa(dict): Dictionary containing the answer and score
+    '''
     context = load_context(sources)
     if len(context) == 0:
         print("Error: Empty context or outside paragraphs")
