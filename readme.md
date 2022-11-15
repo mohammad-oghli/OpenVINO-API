@@ -16,7 +16,7 @@ Currently, Deployed OpenVINO Models:
 
   ![animal_classify](https://i.imgur.com/yj7Epmy.png)
    
-  `'cheetah, chetah, Acinonyx jubatus'`
+  Animal Class: `'cheetah, chetah, Acinonyx jubatus'`
 
 
 * Road Segmentation 2
@@ -59,7 +59,7 @@ Currently, Deployed OpenVINO Models:
  
   ![handwritten_ocr](https://i.imgur.com/EcqdEP1.png)
   
-  `'人有悲欢离合，月有阴睛圆缺，此事古难全。'`
+  Recognized Text: `'人有悲欢离合，月有阴睛圆缺，此事古难全。'`
 
 
 * Interactive Question Answering 8
