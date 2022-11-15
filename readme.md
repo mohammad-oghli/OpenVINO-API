@@ -12,30 +12,30 @@ Check this [demo](https://youtu.be/-VdZlzWaJvA) for more info about the project.
 ____________________________________
 ## Models
 Currently, Deployed OpenVINO Models:
-* Animal Classification
+* Animal Classification 1
 
   ![animal_classify](https://i.imgur.com/yj7Epmy.png)
    
   `'cheetah, chetah, Acinonyx jubatus'`
 
 
-* Road Segmentation
+* Road Segmentation 2
   
   ![road_segmentation](https://i.imgur.com/uvTwSB1.png)
 
-* Optical Character Detection(OCD)
+* Optical Character Detection(OCD) 3
   
   ![ocd](https://i.imgur.com/2RINxrL.png)
 
-* Super Resolution
+* Super Resolution 4
 
   ![superresulotion](https://i.imgur.com/cIC2Hx8.png)
 
-* Vehicle Recognition
+* Vehicle Recognition 5
  
   ![vehicle_rec](https://i.imgur.com/ApGsWxJ.png)
 
-* Named Entity Recognition(NER)
+* Named Entity Recognition(NER) 6
   
   <pre>source_text = "Intel was founded in Mountain View, California, " \
                   "in 1968 by Gordon E. Moore, a chemist, and Robert Noyce, " \
@@ -55,14 +55,14 @@ Currently, Deployed OpenVINO Models:
   }
 </pre>
 
-* Handwritten OCR (Chinese & Japanese)
+* Handwritten OCR (Chinese & Japanese) 7
  
   ![handwritten_ocr](https://i.imgur.com/EcqdEP1.png)
   
   `'人有悲欢离合，月有阴睛圆缺，此事古难全。'`
 
 
-* Interactive Question Answering
+* Interactive Question Answering 8
   
   <pre>
   sources = ["https://en.wikipedia.org/wiki/OpenVINO"]
