@@ -76,6 +76,7 @@ Currently, Deployed OpenVINO Models:
 
 ## Update Note 
 Regarding deploying and running the project on Daisi, unfortunately Daisi Platform has been shut down and no longer support running FAAS on the cloud
+
 So I will migrate the project soon to **Hugging Face** which is more reliable plateform for deploying ML models
 
 ## How to call it
